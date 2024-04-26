@@ -620,7 +620,7 @@ access(all) contract FlowEpoch {
                 startView: startView,
                 endView: endView,
                 stakingEndView: stakingEndView,
-                // This will be overwritten in `calculateAndSetRewards` below
+                // The following fields will be overwritten in `calculateAndSetRewards` below
                 totalRewards: UFix64(0.0),
                 collectorClusters: [],
                 clusterQCs: [],
