@@ -200,7 +200,7 @@ access(all) contract FlowEpoch {
     /// Contains metadata about the recovery epoch, this data 
     /// is stored at the storage path /storage/recoverEpochMetadata.
     /// This struct is a 1:1 copy of the event EpochRecover event and is
-    /// is used to populate all the fields of the event when the heartbeat 
+    /// used to populate all the fields of the event when the heartbeat 
     /// detects a new RecoverEpochMetadata stored.
     access(all) struct RecoverEpochMetadata {
         /// The counter for the RecoveryEpoch.
@@ -589,9 +589,13 @@ access(all) contract FlowEpoch {
                 )
             }
 
+            // When we are in EFM, the Epoch Smart Contract's state has likely diverged from the Protocol State, 
+            // which orchestrates the behaviour of the nodes.  Any staking, or Epoch Setup (incl. DKG) that the Epoch smart
+            // contract is attempting to run are probably based on obsolete data. Therefore, we just abort them.
+            // With the recovery epoch, we effectively overwrite the state of the Epoch Smart Contract, aligning it with
+            // the Protocol State that the network currently operates with. 
             if FlowEpoch.currentEpochPhase == EpochPhase.STAKINGAUCTION {
-                /// Since we are resetting the epoch, we do not need to
-                /// start epoch setup also. We only need to end the staking auction
+                // abort staking auction 
                 FlowEpoch.borrowStakingAdmin().endStakingAuction()
             } else {
                 /// force reset the QC and DKG
@@ -636,7 +640,7 @@ access(all) contract FlowEpoch {
                 startView: startView,
                 endView: endView,
                 stakingEndView: stakingEndView,
-                // This will be overwritten in `calculateAndSetRewards` below
+                // The following fields will be overwritten in `calculateAndSetRewards` below
                 totalRewards: UFix64(0.0),
                 collectorClusters: [],
                 clusterQCs: [],
