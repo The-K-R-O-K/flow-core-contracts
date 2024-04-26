@@ -1591,15 +1591,21 @@ func TestEpochRecover(t *testing.T) {
 	t.Run("Can recover the epoch and have everything return to normal", func(t *testing.T) {
 		epochTimingConfigResult := executeScriptAndCheck(t, b, templates.GenerateGetEpochTimingConfigScript(env), nil)
 
-		var startView uint64 = 100
-		var stakingEndView uint64 = 120
-		var endView uint64 = 160
+		var (
+			startView      uint64 = 100
+			stakingEndView uint64 = 120
+			endView        uint64 = 160
+			targetDuration uint64 = numEpochViews
+			targetEndTime  uint64 = expectedTargetEndTime(epochTimingConfigResult, startEpochCounter+1)
+		)
 
 		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateRecoverEpochScript(env), idTableAddress)
 		tx.AddArgument(CadenceString("stillSoRandom"))
 		tx.AddArgument(cadence.NewUInt64(startView))
 		tx.AddArgument(cadence.NewUInt64(stakingEndView))
 		tx.AddArgument(cadence.NewUInt64(endView))
+		tx.AddArgument(cadence.NewUInt64(targetDuration))
+		tx.AddArgument(cadence.NewUInt64(targetEndTime))
 		collectorClusters := make([]cadence.Value, 3)
 		collectorClusters[0] = cadence.NewArray([]cadence.Value{CadenceString("node_1"), CadenceString("node_2"), CadenceString("node_3")})
 		collectorClusters[1] = cadence.NewArray([]cadence.Value{CadenceString("node_4"), CadenceString("node_5"), CadenceString("node_6")})
@@ -1659,8 +1665,8 @@ func TestEpochRecover(t *testing.T) {
 			dkgPhase1FinalView:      startView + numStakingViews + numDKGViews - 1,
 			dkgPhase2FinalView:      startView + numStakingViews + (2 * numDKGViews) - 1,
 			dkgPhase3FinalView:      startView + numStakingViews + (3 * numDKGViews) - 1,
-			targetDuration:          numEpochViews,
-			targetEndTime:           expectedTargetEndTime(epochTimingConfigResult, startEpochCounter+1),
+			targetDuration:          targetDuration,
+			targetEndTime:           targetEndTime,
 			clusterQCVoteDataLength: 0,
 			dkgPubKeys:              dkgPubKeys,
 		}
