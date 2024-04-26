@@ -593,9 +593,13 @@ access(all) contract FlowEpoch {
                 )
             }
 
+            // When we are in EFM, the Epoch Smart Contract's state has likely diverged from the Protocol State, 
+            // which orchestrates the behaviour of the nodes.  Any staking, or Epoch Setup (incl. DKG) that the Epoch smart
+            // contract is attempting to run are probably based on obsolete data. Therefore, we just abort them.
+            // With the recovery epoch, we effectively overwrite the state of the Epoch Smart Contract, aligning it with
+            // the Protocol State that the network currently operates with. 
             if FlowEpoch.currentEpochPhase == EpochPhase.STAKINGAUCTION {
-                // Since we are resetting the epoch, we do not need to
-                // start epoch setup also. We only need to end the staking auction
+                // abort staking auction 
                 FlowEpoch.borrowStakingAdmin().endStakingAuction()
             } else {
                 // force reset the QC and DKG
